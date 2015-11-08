@@ -247,6 +247,22 @@ void Shell::init()
 
 	// Subscribe to GUI events
 	m_nvim->neovimObject()->vim_subscribe("Gui");
+
+	updateWindowId();
+}
+
+//  In Win32, set $WINDOWID environment variable
+//  in other systems this does nothing
+void Shell::updateWindowId()
+{
+#ifdef _WIN32
+	if (m_attached) {
+		WId window_id = effectiveWinId();
+		m_nvim->neovimObject()->vim_command(
+				m_nvim->encode(QString("let $WINDOWID=\"%1\"").arg(window_id))
+				);
+	}
+#endif
 }
 
 void Shell::neovimError(NeovimConnector::NeovimError err)
@@ -799,6 +815,17 @@ void Shell::wheelEvent(QWheelEvent *ev)
 			.arg(pos.x()).arg(pos.y());
 	}
 	m_nvim->neovimObject()->vim_input(inp.toLatin1());
+}
+
+bool Shell::event(QEvent *event)
+{
+#ifdef _WIN32
+	if (event->type() == QEvent::WinIdChange){
+		updateWindowId();
+		return true;
+	}
+#endif
+	return QWidget::event(event);
 }
 
 void Shell::resizeNeovim(const QSize& newSize)
