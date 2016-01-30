@@ -6,13 +6,15 @@ compiler:
   - gcc
   - clang
 before_install:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew ls | grep -wq cmake || brew install cmake; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew ls | grep -wq qt5 || brew install qt5; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew ls | grep -wq msgpack || brew install msgpack; fi
+  - brew update
+  # Install Neovim for the unit tests
+  - brew install neovim/neovim/neovim
+  - brew ls | grep -wq cmake || brew install cmake
+  - brew ls | grep -wq qt5 || brew install qt5
+  - brew ls | grep -wq msgpack || brew install msgpack
 script:
   - mkdir build
   - cd build
-  - cmake -DUSE_SYSTEM_MSGPACK=OFF -DCMAKE_PREFIX_PATH=/usr/local/opt/qt5 ..
+  - cmake -DUSE_SYSTEM_MSGPACK=OFF ..
   - make
-  # TODO: Install Neovim and run tests
-  #  - ctest --output-on-failure
+  - ctest --output-on-failure
